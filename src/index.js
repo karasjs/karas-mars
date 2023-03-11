@@ -143,41 +143,24 @@ class Mars extends karas.Component {
   }
 
   render() {
-    return karas.createElement('div', {},
-      karas.createElement($, {
-        ref: 'fake',
-        style: {
-          width: '100%',
-          height: '100%',
-          fill: 'none',
-          stroke: 0,
-        },
-      }));
-    return karas.parse({
-      tagName: 'div',
-      children: [
-        {
-          tagName: '$',
-          props: {
-            ref: 'fake',
-            style: {
-              width: '100%',
-              height: '100%',
-              fill: 'none',
-              stroke: 0,
-            },
-          },
-        },
-      ],
-    });
-    // return <div>
-    //   <$ ref="fake" style={{
-    //     width: '100%',
-    //     height: '100%',
-    //     fill: 'none',
-    //     stroke: 0,
-    //   }}/>
-    // </div>;
+    // return karas.createElement('div', {},
+    //   karas.createElement($, {
+    //     ref: 'fake',
+    //     style: {
+    //       width: '100%',
+    //       height: '100%',
+    //       fill: 'none',
+    //       stroke: 0,
+    //     },
+    //   }));
+    return <div>
+      <$ ref="fake" style={{
+        width: '100%',
+        height: '100%',
+        fill: 'none',
+        stroke: 0,
+      }}/>
+    </div>;
   }
 }
 
