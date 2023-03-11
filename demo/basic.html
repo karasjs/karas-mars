@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=0"/>
+  <title>basic</title>
+  <link href="style.css" media="all" rel="stylesheet"/>
+</head>
+<body>
+<div id="test"></div>
+<pre><code class="brush:csx"></code></pre>
+<script type="text/jsx">
+  karas.debug = true;
+  let root = karas.render(
+    <webgl width={360} height={360}>
+      <Mars style={{
+        width: 200,
+        height: 200,
+        background: '#F00',
+      }} url={'https://gw.alipayobjects.com/os/gltf-asset/mars-cli/ELCOQKVUKUIO/-994158386-08237.json'}/>
+    </webgl>,
+    '#test'
+  );
+</script>
+<script src="homunculus.js"></script>
+<script src="yurine.js"></script>
+<script src="sea.js"></script>
+<script src="https://gw.alipayobjects.com/os/lib/karas/0.86.6/index.js"></script>
+<!--<script src="https://gw.alipayobjects.com/os/lib/alipay/mars-player/1.1.37/dist/index.js"></script>-->
+<script src="../index.js"></script>
+<script>
+  seajs.config({
+    alias: {},
+  });
+  define('fs', {});
+  seajs.use(['jssc'], function(jssc) {
+    var code = document.querySelector('pre code');
+    var jsx = document.querySelector('script[type="text/jsx"]');
+    var source = jsx.textContent || jsx.text;
+    source = source.trim().replace(/\n[ ]{2}/g, '\n');
+    var text = document.createTextNode(source);
+    code.appendChild(text);
+    jssc.exec();
+    var head = document.head || document.getElementsByTagName('head')[0];
+    var jsx = document.querySelectorAll('script');
+    for(var i = 0, len = jsx.length; i < len; i++) {
+      var node = jsx[i];
+      if(node.getAttribute('type') === 'text/jsx' && !node.getAttribute('yurine')) {
+        node.setAttribute('yurine', 1);
+        var code = node.textContent || node.text;
+        if(!code) {
+          continue;
+        }
+        code = yurine.parse(code);
+        var script = document.createElement('script');
+        script.async = true;
+        script.text = code;
+        head.appendChild(script);
+      }
+    }
+  });
+</script>
+</body>
+</html>
