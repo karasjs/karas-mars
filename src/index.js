@@ -1,5 +1,5 @@
 import karas from 'karas';
-import { MarsPlayer, MarsPlayerConstructor, MarsPlayerPlayOptions, RI } from '@alipay/mars-player';
+import { loadSceneAsync, MarsPlayer, MarsPlayerConstructor, MarsPlayerPlayOptions, RI } from '@alipay/mars-player';
 import { version } from '../package.json';
 
 const {
@@ -39,6 +39,7 @@ void main(){ gl_FragColor = vec4(1.);}
 class $ extends karas.Geom {
   scene = null;
   mp = null;
+  timeDelta = 0;
 
   constructor(tagName, props) {
     super(tagName, props);
@@ -53,7 +54,8 @@ class $ extends karas.Geom {
     if(renderMode !== root.__renderMode || renderMode !== WEBGL) {
       return res;
     }
-    if(this.scene) {console.log(MarsPlayer)
+    let scene = this.scene;
+    if(scene) {
       if(!this.mp) {
         let gl = ctx;
         let mp = this.mp = new MarsPlayer({
@@ -87,7 +89,36 @@ class $ extends karas.Geom {
         this.renderState.bindFramebuffer(gl.FRAMEBUFFER, null);
         this.renderState.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 0);
         this.renderState.noCache = true;
+
+        let activeTexIndex = gl.getParameter(gl.ACTIVE_TEXTURE);
+        let originTexture = gl.getParameter(gl.TEXTURE_BINDING_2D);
+
+        let composition = this.composition = mp.initializeComposition(scene, {
+          onEnd: () => {},
+          keepResource: false,
+          willReverseTime: false,
+        });
+        let onComp = () => {
+          composition.start();
+          scene.textures = void 0;
+        };
+        onComp();
       }
+      let comp = this.composition;
+    }
+  }
+
+  _updateComposition() {
+    if(this.isDestroyed || this.mp.paused) {
+      return;
+    }
+    let comp = this.composition;
+    if(comp.shouldRestart) {
+      comp.restart();
+    }
+    else if(!comp.shouldDestroy) {
+      let dt = Math.min(this.timeDelta || 0, 33);
+      comp.tick(dt);
     }
   }
 }
@@ -107,7 +138,8 @@ class Mars extends karas.Component {
     this.load();
 
     let fake = this.ref.fake;
-    fake.frameAnimate(() => {
+    fake.frameAnimate(timeDelta => {
+      fake.timeDelta = timeDelta;
       if(this.isPlay && this.isLoaded) {
         fake.refresh();
       }
@@ -127,8 +159,11 @@ class Mars extends karas.Component {
     request.onload = () => {
       if(request.response) {
         this.isLoaded = true;
-        this.props.onLoad?.();
-        this.playAnimation(request.response);
+        let json = request.response;
+        loadSceneAsync(json, {}).then(scene => {
+          this.props.onLoad?.();
+          this.playAnimation(scene);
+        });
       }
     };
     request.send();

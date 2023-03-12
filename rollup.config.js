@@ -1,6 +1,7 @@
 import babel from '@rollup/plugin-babel';
 import { terser } from 'rollup-plugin-terser';
 import json from '@rollup/plugin-json';
+import nodeResolve from '@rollup/plugin-node-resolve';
 
 export default [{
   input: 'src/index.js',
@@ -13,7 +14,9 @@ export default [{
     format: 'umd',
     sourcemap: true,
   },
+  external: ['karas'],
   plugins: [
+    nodeResolve({ preferBuiltins: false }),
     babel({
       exclude: 'node_modules/**', // 只编译我们的源代码
       babelHelpers: 'bundled',
@@ -31,7 +34,9 @@ export default [{
     format: 'es',
     sourcemap: true,
   },
+  external: ['karas'],
   plugins: [
+    nodeResolve({ preferBuiltins: false }),
     babel({
       exclude: 'node_modules/**', // 只编译我们的源代码
       babelHelpers: 'bundled',
@@ -49,7 +54,9 @@ export default [{
     format: 'umd',
     sourcemap: true,
   },
+  external: ['karas'],
   plugins: [
+    nodeResolve({ preferBuiltins: false }),
     babel({
       exclude: 'node_modules/**', // 只编译我们的源代码
       babelHelpers: 'bundled',
