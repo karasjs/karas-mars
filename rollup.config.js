@@ -27,7 +27,7 @@ export default [{
   input: 'src/index.js',
   output: {
     name: 'Mars',
-    file: 'index.js',
+    file: 'index.es.js',
     globals: {
       karas: 'karas',
     },

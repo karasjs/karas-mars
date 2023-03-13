@@ -56,9 +56,10 @@ class $ extends karas.Geom {
     }
     let scene = this.scene;
     if(scene) {
-      if(!this.mp) {
+      let mp = this.mp;
+      if(!mp) {
         let gl = ctx;
-        let mp = this.mp = new MarsPlayer({
+        mp = this.mp = new MarsPlayer({
           gl,
           manualRender: true,
         });
@@ -90,6 +91,10 @@ class $ extends karas.Geom {
         this.renderState.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 0);
         this.renderState.noCache = true;
 
+        let flipY = gl.getParameter(gl.UNPACK_FLIP_Y_WEBGL);
+        let premultiply = gl.getParameter(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL);
+        let program = gl.getParameter(gl.CURRENT_PROGRAM);
+        gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
         let activeTexIndex = gl.getParameter(gl.ACTIVE_TEXTURE);
         let originTexture = gl.getParameter(gl.TEXTURE_BINDING_2D);
 
@@ -100,18 +105,34 @@ class $ extends karas.Geom {
         });
         let onComp = () => {
           composition.start();
+          if (originTexture) {
+            gl.bindTexture(gl.TEXTURE_2D, originTexture);
+          }
+          gl.activeTexture(activeTexIndex);
+          composition.camera = {
+            aspect: this.width / this.height,
+          };
+          this.renderState.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, +premultiply);
+          this.renderState.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, +flipY);
+          this.renderState.useProgram(null);
+          gl.useProgram(program);
           scene.textures = void 0;
         };
         onComp();
       }
       let comp = this.composition;
+      let renderer = comp && comp.renderer;
+      if(renderer && !renderer.isDestroyed && !mp.paused) {
+        this._updateTransform();
+        this._updateComposition();
+        comp.renderFrame.render();
+      }
     }
   }
 
+  _updateTransform() {}
+
   _updateComposition() {
-    if(this.isDestroyed || this.mp.paused) {
-      return;
-    }
     let comp = this.composition;
     if(comp.shouldRestart) {
       comp.restart();
