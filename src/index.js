@@ -1,5 +1,5 @@
 import karas from 'karas';
-import { loadSceneAsync, MarsPlayer, MarsPlayerConstructor, MarsPlayerPlayOptions, RI } from '@alipay/mars-player';
+import { loadSceneAsync, MarsPlayer, RI } from '@alipay/mars-player';
 import { version } from '../package.json';
 
 const {
@@ -125,6 +125,8 @@ class $ extends karas.Geom {
       if(renderer && !renderer.isDestroyed && !mp.paused) {
         this._updateTransform();
         this._updateComposition();
+        let bit = RI.constants.STENCIL_BUFFER_BIT;
+        mp.renderState.clear(bit);
         comp.renderFrame.render();
       }
     }
