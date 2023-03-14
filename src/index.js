@@ -40,6 +40,7 @@ class $ extends karas.Geom {
   scene = null;
   mp = null;
   timeDelta = 0;
+  playbackRate = 1;
 
   constructor(tagName, props) {
     super(tagName, props);
@@ -126,7 +127,7 @@ class $ extends karas.Geom {
         this._updateTransform();
         this._updateComposition();
         let bit = RI.constants.STENCIL_BUFFER_BIT;
-        mp.renderState.clear(bit);
+        this.renderState.clear(bit);
         comp.renderFrame.render();
       }
     }
@@ -140,7 +141,7 @@ class $ extends karas.Geom {
       comp.restart();
     }
     else if(!comp.shouldDestroy) {
-      let dt = Math.min(this.timeDelta || 0, 33);
+      let dt = Math.min(this.timeDelta || 0, 33) * this.playbackRate;
       comp.tick(dt);
     }
   }
@@ -160,13 +161,18 @@ class Mars extends karas.Component {
   componentDidMount() {
     this.load();
 
-    let fake = this.ref.fake;
-    fake.frameAnimate(timeDelta => {
+    let { autoPlay = true } = this.props;
+    this.cb = timeDelta => {
       fake.timeDelta = timeDelta;
       if(this.isPlay && this.isLoaded) {
         fake.refresh();
       }
-    });
+    }
+    let fake = this.ref.fake;
+    fake.playbackRate = this.__playbackRate;
+    if(autoPlay) {
+      fake.frameAnimate(this.cb);
+    }
   }
 
   componentWillUnmount() {}
@@ -193,7 +199,6 @@ class Mars extends karas.Component {
   }
 
   playAnimation(scene) {
-    console.log(scene);
     let fake = this.ref.fake;
     fake.scene = scene;
     // 第一帧强制显示
@@ -201,16 +206,6 @@ class Mars extends karas.Component {
   }
 
   render() {
-    // return karas.createElement('div', {},
-    //   karas.createElement($, {
-    //     ref: 'fake',
-    //     style: {
-    //       width: '100%',
-    //       height: '100%',
-    //       fill: 'none',
-    //       stroke: 0,
-    //     },
-    //   }));
     return <div>
       <$ ref="fake" style={{
         width: '100%',
@@ -219,6 +214,35 @@ class Mars extends karas.Component {
         stroke: 0,
       }}/>
     </div>;
+  }
+
+  play() {
+    this.pause();
+    let comp = this.ref.fake.composition;
+    if(comp) {
+      comp.restart();
+    }
+    this.resume();
+  }
+
+  pause() {
+    this.ref.fake.removeFrameAnimate(this.cb);
+  }
+
+  resume() {
+    this.ref.fake.frameAnimate(this.cb);
+  }
+
+  get playbackRate() {
+    return this.__playbackRate;
+  }
+
+  set playbackRate(v) {
+    v = parseFloat(v) || 1;
+    if(v <= 0) {
+      v = 1;
+    }
+    this.__playbackRate = v;
   }
 }
 
