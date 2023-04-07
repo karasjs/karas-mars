@@ -166,6 +166,7 @@ class $ extends karas.Geom {
     let comp = this.composition;
     if(comp.shouldRestart) {
       comp.restart();
+      comp.tick(0);
     }
     else if(!comp.shouldDestroy) {
       let dt = Math.min(this.timeDelta || 0, 33) * this.playbackRate;
@@ -179,7 +180,6 @@ class $ extends karas.Geom {
     gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
     gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
-    gl.enable(gl.DEPTH_TEST);
     this.aliasRenderState();
   }
 
