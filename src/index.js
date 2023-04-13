@@ -251,7 +251,9 @@ class Mars extends karas.Component {
     }
   }
 
-  componentWillUnmount() {}
+  componentWillUnmount() {
+    this.mp && this.mp.destroy(true);
+  }
 
   load() {
     let url = this.props.url;
