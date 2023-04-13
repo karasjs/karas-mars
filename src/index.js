@@ -300,6 +300,7 @@ class Mars extends karas.Component {
     let comp = this.ref.fake.composition;
     if(comp) {
       comp.restart();
+      comp.tick(0);
     }
     this.resume();
   }

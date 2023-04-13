@@ -436,6 +436,7 @@
         var comp = this.ref.fake.composition;
         if (comp) {
           comp.restart();
+          comp.tick(0);
         }
         this.resume();
       }
