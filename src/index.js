@@ -44,6 +44,7 @@ function mapRange(p, min, max) {
 
 class $ extends karas.Geom {
   scene = null;
+  playOptions = null;
   mp = null;
   timeDelta = 0;
   playbackRate = 1;
@@ -108,11 +109,11 @@ class $ extends karas.Geom {
         gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
         let activeTexIndex = gl.getParameter(gl.ACTIVE_TEXTURE);
         let originTexture = gl.getParameter(gl.TEXTURE_BINDING_2D);
-
         let composition = this.composition = mp.initializeComposition(scene, {
           onEnd: () => {},
           keepResource: false,
           willReverseTime: false,
+          ...this.playOptions,
         });
         let onComp = () => {
           composition.start();
@@ -268,7 +269,9 @@ class Mars extends karas.Component {
       if(request.response) {
         this.isLoaded = true;
         let json = request.response;
-        loadSceneAsync(json, {}).then(scene => {
+        loadSceneAsync(json, {
+          ...this.props?.loadOptions
+        }).then(scene => {
           this.props.onLoad?.();
           this.playAnimation(scene);
         });
@@ -280,6 +283,7 @@ class Mars extends karas.Component {
   playAnimation(scene) {
     let fake = this.ref.fake;
     fake.scene = scene;
+    fake.playOptions = this.props?.playOptions;
     // 第一帧强制显示
     fake.refresh();
   }
