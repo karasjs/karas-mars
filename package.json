@@ -8,8 +8,10 @@
   "peerDependencies": {
     "karas": "~0.86.14"
   },
+  "dependencies": {
+    "@alipay/mars-player": "^1.1.38"
+  },
   "devDependencies": {
-    "@alipay/mars-player": "1.1.38",
     "@babel/core": "^7.18.9",
     "@babel/plugin-proposal-class-properties": "^7.18.6",
     "@babel/plugin-transform-block-scoping": "^7.18.9",
