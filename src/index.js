@@ -252,7 +252,8 @@ class Mars extends karas.Component {
   }
 
   componentWillUnmount() {
-    this.mp && this.mp.destroy(true);
+    const mp = this.ref.fake.mp;
+    mp && mp.destroy(true);
   }
 
   load() {

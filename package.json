@@ -1,12 +1,12 @@
 {
   "name": "karas-mars",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "scripts": {
     "build": "rollup -c rollup.config.js",
     "dev": "rollup -c rollup.dev.config.js --watch"
   },
   "peerDependencies": {
-    "karas": "~0.86.13"
+    "karas": "~0.86.14"
   },
   "devDependencies": {
     "@alipay/mars-player": "1.1.38",
