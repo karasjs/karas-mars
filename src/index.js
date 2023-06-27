@@ -328,6 +328,9 @@ class Mars extends karas.Component {
       v = 1;
     }
     this.__playbackRate = v;
+    if (this.ref.fake) {
+      this.ref.fake.playbackRate = v;
+    }
   }
 }
 
