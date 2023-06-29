@@ -61,8 +61,8 @@ body{
 
 canvas, svg{
   display:block;
-  width:360px;
-  height:360px;
+  width: 375px;
+  height: 750px;
   background:#333;
 }
 
