@@ -54,7 +54,7 @@ export default [{
     format: 'umd',
     sourcemap: true,
   },
-  external: ['karas'],
+  external: ['karas', '@alipay/mars-player'],
   plugins: [
     nodeResolve({ preferBuiltins: false }),
     babel({
