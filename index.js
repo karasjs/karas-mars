@@ -133,7 +133,7 @@
     return typeof key === "symbol" ? key : String(key);
   }
 
-  var version = "0.0.8";
+  var version = "0.0.9";
 
   var _karas$refresh = karas__default["default"].refresh;
     _karas$refresh.level.CACHE;
@@ -267,11 +267,9 @@
           parent.getStyle('scaleY');
           parent.getStyle('rotateZ');
         this.env;
-        comp.rootTransform.setTransform({
-          // position: point,
-          // scale: [scaleX * this.width / env.width, scaleY * this.height / env.height, 1],
-          // rotation: [0, 0, rotateZ],
-        });
+        if (this.playOptions && this.playOptions.transform) {
+          comp.rootTransform.setTransform(_objectSpread2({}, this.playOptions.transform));
+        }
       }
     }, {
       key: "_updateComposition",

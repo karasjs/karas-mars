@@ -157,11 +157,14 @@ class $ extends karas.Geom {
       scaleY = parent.getStyle('scaleY'),
       rotateZ = parent.getStyle('rotateZ');
     let env = this.env;
-    comp.rootTransform.setTransform({
-      // position: point,
-      // scale: [scaleX * this.width / env.width, scaleY * this.height / env.height, 1],
-      // rotation: [0, 0, rotateZ],
-    });
+    if (this.playOptions && this.playOptions.transform) {
+      comp.rootTransform.setTransform({
+        // position: point,
+        // scale: [scaleX * this.width / env.width, scaleY * this.height / env.height, 1],
+        // rotation: [0, 0, rotateZ],
+        ...this.playOptions.transform,
+      });
+    }
   }
 
   _updateComposition() {
