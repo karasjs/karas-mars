@@ -263,13 +263,15 @@
         var parent = this.domParent;
         var comp = this.composition;
         this.project3DPoint(comp.camera);
-        parent.getStyle('scaleX');
-          parent.getStyle('scaleY');
+        var scaleX = parent.getStyle('scaleX'),
+          scaleY = parent.getStyle('scaleY');
           parent.getStyle('rotateZ');
         this.env;
-        if (this.playOptions && this.playOptions.transform) {
-          comp.rootTransform.setTransform(_objectSpread2({}, this.playOptions.transform));
-        }
+        comp.rootTransform.setTransform({
+          // position: point,
+          scale: [scaleX, scaleY, 1]
+          // rotation: [0, 0, rotateZ],
+        });
       }
     }, {
       key: "_updateComposition",
