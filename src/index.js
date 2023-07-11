@@ -300,12 +300,12 @@ class Mars extends karas.Component {
     </div>;
   }
 
-  play() {
+  play(start) {
     this.pause();
     let comp = this.ref.fake.composition;
     if(comp) {
       comp.restart();
-      comp.tick(0);
+      comp.tick(start ?? 0);
     }
     this.resume();
   }
@@ -324,9 +324,9 @@ class Mars extends karas.Component {
 
   set playbackRate(v) {
     v = parseFloat(v) || 1;
-    if(v <= 0) {
-      v = 1;
-    }
+    // if(v <= 0) {
+    //   v = 1;
+    // }
     this.__playbackRate = v;
     if (this.ref.fake) {
       this.ref.fake.playbackRate = v;

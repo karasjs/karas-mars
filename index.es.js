@@ -126,7 +126,7 @@ function _toPropertyKey(arg) {
   return typeof key === "symbol" ? key : String(key);
 }
 
-var version = "0.0.9";
+var version = "0.0.10";
 
 var _karas$refresh = karas.refresh;
   _karas$refresh.level.CACHE;
@@ -421,12 +421,12 @@ var Mars = /*#__PURE__*/function (_karas$Component) {
     }
   }, {
     key: "play",
-    value: function play() {
+    value: function play(start) {
       this.pause();
       var comp = this.ref.fake.composition;
       if (comp) {
         comp.restart();
-        comp.tick(0);
+        comp.tick(start !== null && start !== void 0 ? start : 0);
       }
       this.resume();
     }
@@ -447,9 +447,9 @@ var Mars = /*#__PURE__*/function (_karas$Component) {
     },
     set: function set(v) {
       v = parseFloat(v) || 1;
-      if (v <= 0) {
-        v = 1;
-      }
+      // if(v <= 0) {
+      //   v = 1;
+      // }
       this.__playbackRate = v;
       if (this.ref.fake) {
         this.ref.fake.playbackRate = v;

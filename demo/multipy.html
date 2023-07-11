@@ -12,17 +12,22 @@
 <pre><code class="brush:csx"></code></pre>
 <script type="text/jsx">
   let root = karas.render(
-    <webgl width={750} height={1500}>
+    <webgl width={750} height={1500} contextAttributes={{preserveDrawingBuffer: true}}>
       <Mars style={{
-        width: 750,
-        height: 1500,
+        width: 100,
+        height: 200,
         background: '#F00',
-      }} url={'https://mdn.alipayobjects.com/mars/afts/file/A*pMFDTrTINgEAAAAAAAAAAAAADlB4AQ'} playbackRate={1}/>
-      <Mars style={{
-        width: 750,
-        height: 1500,
-        background: '#F00',
-      }} url={'https://mdn.alipayobjects.com/mars/afts/file/A*0RqASJbrKZcAAAAAAAAAAAAADlB4AQ'} playbackRate={2}/>
+        zIndex: 9,
+      //  display: 'none',
+      }}
+        url={'https://mdn.alipayobjects.com/mars/afts/file/A*FaqiQZmFjEwAAAAAAAAAAAAADlB4AQ'}
+        playbackRate={1}
+        playOptions={
+          {
+            keepResource: true
+          }
+        }
+      />
     </webgl>,
     '#test'
   );
@@ -30,8 +35,8 @@
 <script src="homunculus.js"></script>
 <script src="yurine.js"></script>
 <script src="sea.js"></script>
-<script src="https://gw.alipayobjects.com/os/lib/karas/0.86.6/index.js"></script>
-<!--<script src="https://gw.alipayobjects.com/os/lib/alipay/mars-player/1.1.37/dist/index.js"></script>-->
+<script src="https://gw.alipayobjects.com/os/lib/karas/0.86.22/index.js"></script>
+<script src="https://gw.alipayobjects.com/os/lib/alipay/mars-player/1.3.4/dist/index.js"></script>
 <script src="../index.js"></script>
 <script>
   seajs.config({
