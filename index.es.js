@@ -126,7 +126,9 @@ function _toPropertyKey(arg) {
   return typeof key === "symbol" ? key : String(key);
 }
 
-var version = "0.0.10";
+var version = "0.0.12";
+
+// const { loadSceneAsync, MarsPlayer, RI } = window.Mars;
 
 var _karas$refresh = karas.refresh;
   _karas$refresh.level.CACHE;
@@ -333,6 +335,7 @@ var $ = /*#__PURE__*/function (_karas$Geom) {
 var Mars = /*#__PURE__*/function (_karas$Component) {
   _inherits(Mars, _karas$Component);
   function Mars(props) {
+    var _props$playbackRate;
     var _this3;
     _this3 = _karas$Component.call(this, props) || this;
     _defineProperty(_assertThisInitialized(_this3), "isPlay", false);
@@ -341,7 +344,7 @@ var Mars = /*#__PURE__*/function (_karas$Component) {
     _defineProperty(_assertThisInitialized(_this3), "clearDepth", false);
     _defineProperty(_assertThisInitialized(_this3), "blend", false);
     _this3.isPlay = props.autoPlay !== false;
-    _this3.__playbackRate = props.playbackRate || 1;
+    _this3.__playbackRate = (_props$playbackRate = props.playbackRate) !== null && _props$playbackRate !== void 0 ? _props$playbackRate : 1;
     _this3.clearDepth = !!props.clearDepth;
     _this3.blend = !!props.blend;
     return _this3;
@@ -422,13 +425,18 @@ var Mars = /*#__PURE__*/function (_karas$Component) {
   }, {
     key: "play",
     value: function play(start) {
-      this.pause();
-      var comp = this.ref.fake.composition;
-      if (comp) {
-        comp.restart();
-        comp.tick(start !== null && start !== void 0 ? start : 0);
-      }
-      this.resume();
+      var _this6 = this;
+      var cb = function cb() {
+        var comp = _this6.ref.fake.composition;
+        if (comp) {
+          _this6.ref.fake.removeFrameAnimate(cb);
+          _this6.pause();
+          comp.restart();
+          comp.tick(start !== null && start !== void 0 ? start : 0);
+          _this6.resume();
+        }
+      };
+      this.ref.fake.frameAnimate(cb);
     }
   }, {
     key: "pause",
@@ -446,7 +454,8 @@ var Mars = /*#__PURE__*/function (_karas$Component) {
       return this.__playbackRate;
     },
     set: function set(v) {
-      v = parseFloat(v) || 1;
+      var _parseFloat;
+      v = (_parseFloat = parseFloat(v)) !== null && _parseFloat !== void 0 ? _parseFloat : 1;
       // if(v <= 0) {
       //   v = 1;
       // }

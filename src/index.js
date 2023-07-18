@@ -1,6 +1,7 @@
 import karas from 'karas';
 import { loadSceneAsync, MarsPlayer, RI } from '@alipay/mars-player';
 import { version } from '../package.json';
+// const { loadSceneAsync, MarsPlayer, RI } = window.Mars;
 
 const {
   refresh: {
@@ -231,7 +232,7 @@ class Mars extends karas.Component {
   constructor(props) {
     super(props);
     this.isPlay = props.autoPlay !== false;
-    this.__playbackRate = props.playbackRate || 1;
+    this.__playbackRate = props.playbackRate ?? 1;
     this.clearDepth = !!props.clearDepth;
     this.blend = !!props.blend;
   }
@@ -301,13 +302,17 @@ class Mars extends karas.Component {
   }
 
   play(start) {
-    this.pause();
-    let comp = this.ref.fake.composition;
-    if(comp) {
-      comp.restart();
-      comp.tick(start ?? 0);
+    const cb = () => {
+      let comp = this.ref.fake.composition;
+      if (comp) {
+        this.ref.fake.removeFrameAnimate(cb);
+        this.pause();
+        comp.restart();
+        comp.tick(start ?? 0);
+        this.resume();
+      }
     }
-    this.resume();
+    this.ref.fake.frameAnimate(cb);
   }
 
   pause() {
@@ -323,7 +328,7 @@ class Mars extends karas.Component {
   }
 
   set playbackRate(v) {
-    v = parseFloat(v) || 1;
+    v = parseFloat(v) ?? 1;
     // if(v <= 0) {
     //   v = 1;
     // }
