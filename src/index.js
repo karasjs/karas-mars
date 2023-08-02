@@ -1,7 +1,8 @@
 import karas from 'karas';
-import { loadSceneAsync, MarsPlayer, RI } from '@alipay/mars-player';
+// import * as MarsPlayer from '@alipay/mars-player'
+// import { loadScene, MarsPlayer } from '@galacean/mars-player';
 import { version } from '../package.json';
-// const { loadSceneAsync, MarsPlayer, RI } = window.Mars;
+const {  MarsPlayer,AssetManager,Material,glContext,Composition } = window.mars;
 
 const {
   refresh: {
@@ -64,6 +65,7 @@ class $ extends karas.Geom {
       return res;
     }
     let scene = this.scene;
+    console.log(scene);
     let gl = ctx;
     if(scene) {
       let mp = this.mp;
@@ -73,36 +75,37 @@ class $ extends karas.Geom {
           gl,
           manualRender: true,
         });
-        this.gpu = mp.renderer.gpu;
-        this.renderState = mp.renderer.internal.state;
-        this.defaultMtl = new RI.Material({
+        this.gpu = mp.gpuCapability;
+        this.renderState = mp.renderer.pipelineContext.gl;
+        this.defaultMtl = Material.create({
           name: 'defMtl',
           shader: {
             vertex: vertexSimple,
             fragment: fragmentSimple,
             shared: true,
-          },
-          states: {
-            blending: true,
-            blendSrc: gl.ONE,
-            blendSrcAlpha: gl.ONE,
-            blendDst: gl.ONE_MINUS_SRC_ALPHA,
-            blendDstAlpha: gl.ONE_MINUS_SRC_ALPHA,
-            depthMask: true,
-            depthTest: false,
-            cullFaceEnabled: false,
-            frontFace: gl.CCW,
-            stencilTest: false,
-            polygonOffsetFill: false,
-            polygonOffset: [1, 0],
-          },
-        }).assignRenderer(mp.renderer);
+          }
+          // states: {
+          //   blending: true,
+          //   blendSrc: gl.ONE,
+          //   blendSrcAlpha: gl.ONE,
+          //   blendDst: gl.ONE_MINUS_SRC_ALPHA,
+          //   blendDstAlpha: gl.ONE_MINUS_SRC_ALPHA,
+          //   depthMask: true,
+          //   depthTest: false,
+          //   cullFaceEnabled: false,
+          //   frontFace: gl.CCW,
+          //   stencilTest: false,
+          //   polygonOffsetFill: false,
+          //   polygonOffset: [1, 0],
+          // },
+        });
+        this.defaultMtl.initialize(mp.renderer.engine);
+
         this.renderState.bindFramebuffer(gl.FRAMEBUFFER, null);
         this.renderState.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 0);
-        this.renderState.noCache = true;
 
         if(!this.host.blend) {
-          this.renderState.disable(RI.constants.BLEND);
+          this.renderState.disable(glContext.BLEND);
         }
         let flipY = gl.getParameter(gl.UNPACK_FLIP_Y_WEBGL);
         let premultiply = gl.getParameter(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL);
@@ -110,12 +113,16 @@ class $ extends karas.Geom {
         gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
         let activeTexIndex = gl.getParameter(gl.ACTIVE_TEXTURE);
         let originTexture = gl.getParameter(gl.TEXTURE_BINDING_2D);
-
-        let composition = this.composition = mp.initializeComposition(scene, {
-          onEnd: () => {},
+        const renderer = mp.renderer;
+        let composition = this.composition = Composition.initialize(scene, {
+          handleEnd: () => {},
           keepResource: false,
           willReverseTime: false,
           ...this.playOptions,
+          renderer,
+          width: renderer.getWidth(),
+          height: renderer.getHeight(),
+          shaderLibrary: renderer.getShaderLibrary(),
         });
         let onComp = () => {
           composition.start();
@@ -123,9 +130,6 @@ class $ extends karas.Geom {
             gl.bindTexture(gl.TEXTURE_2D, originTexture);
           }
           gl.activeTexture(activeTexIndex);
-          composition.camera = {
-            aspect: this.width / this.height,
-          };
           this.renderState.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, +premultiply);
           this.renderState.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, +flipY);
           this.renderState.useProgram(null);
@@ -139,12 +143,12 @@ class $ extends karas.Geom {
       if(renderer && !renderer.isDestroyed && !mp.paused) {
         this._updateTransform();
         this._updateComposition();
-        let bit = RI.constants.STENCIL_BUFFER_BIT;
+        let bit = glContext.STENCIL_BUFFER_BIT;
         if(this.host.clearDepth) {
-          bit = bit | RI.constants.DEPTH_BUFFER_BIT;
+          bit = bit | glContext.DEPTH_BUFFER_BIT;
         }
         this.renderState.clear(bit);
-        comp.renderFrame.render();
+        renderer.renderRenderFrame(comp.renderFrame)
       }
       this._reset(ctx);
     }
@@ -167,13 +171,13 @@ class $ extends karas.Geom {
 
   _updateComposition() {
     let comp = this.composition;
-    if(comp.shouldRestart) {
+    if(comp.shouldRestart()) {
       comp.restart();
-      comp.tick(0);
+      comp.update(0);
     }
     else if(!comp.shouldDestroy) {
       let dt = Math.min(this.timeDelta || 0, 33) * this.playbackRate;
-      comp.tick(dt);
+      comp.update(dt);
     }
   }
 
@@ -192,9 +196,9 @@ class $ extends karas.Geom {
       let marsRenderState = this.renderState;
       marsRenderState._reset();
       mtl.setupStates();
-      delete marsRenderState._dict[RI.constants.BLEND];
+      delete marsRenderState._dict[glContext.BLEND];
       marsRenderState.depthMask(false);
-      marsRenderState.activeTexture(RI.constants.TEXTURE0);
+      marsRenderState.activeTexture(glContext.TEXTURE0);
     }
   }
 
@@ -231,6 +235,8 @@ class Mars extends karas.Component {
 
   constructor(props) {
     super(props);
+    console.log(this);
+
     this.isPlay = props.autoPlay !== false;
     this.__playbackRate = props.playbackRate ?? 1;
     this.clearDepth = !!props.clearDepth;
@@ -271,9 +277,9 @@ class Mars extends karas.Component {
       if(request.response) {
         this.isLoaded = true;
         let json = request.response;
-        loadSceneAsync(json, {
-          ...this.props?.loadOptions
-        }).then(scene => {
+        // console.log('@alipay/mars-player');
+        const asset = new AssetManager( {...this.props?.loadOptions});
+        asset.loadScene(json).then(scene => {
           this.props.onLoad?.();
           this.playAnimation(scene);
         });
@@ -308,7 +314,7 @@ class Mars extends karas.Component {
         this.ref.fake.removeFrameAnimate(cb);
         this.pause();
         comp.restart();
-        comp.tick(start ?? 0);
+        comp.update(start ?? 0);
         this.resume();
       }
     }

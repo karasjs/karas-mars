@@ -6,10 +6,12 @@
     "dev": "rollup -c rollup.dev.config.js --watch"
   },
   "peerDependencies": {
-    "karas": "~0.86.14",
-    "@alipay/mars-player": "^1.1.38"
+    "karas": "~0.86.14"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@ali/specification": "^1.8.4",
+    "@galacean/mars-player": "2.1.0-beta.0"
+  },
   "devDependencies": {
     "@babel/core": "^7.18.9",
     "@babel/plugin-proposal-class-properties": "^7.18.6",
@@ -26,5 +28,6 @@
   },
   "main": "./index",
   "browser": "./index.js",
-  "module": "./index.es.js"
+  "module": "./index.es.js",
+  "repository": "https://github.com/karasjs/karas-mars.git"
 }
