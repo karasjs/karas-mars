@@ -1,5 +1,4 @@
 import karas from 'karas';
-import { MarsPlayer, RI, loadSceneAsync } from '@alipay/mars-player';
 
 function ownKeys(object, enumerableOnly) {
   var keys = Object.keys(object);
@@ -126,10 +125,14 @@ function _toPropertyKey(arg) {
   return typeof key === "symbol" ? key : String(key);
 }
 
-var version = "0.0.12";
+var version = "0.1.0";
 
-// const { loadSceneAsync, MarsPlayer, RI } = window.Mars;
-
+var _window$mars = window.mars,
+  MarsPlayer = _window$mars.MarsPlayer,
+  AssetManager = _window$mars.AssetManager,
+  Material = _window$mars.Material,
+  glContext = _window$mars.glContext,
+  Composition = _window$mars.Composition;
 var _karas$refresh = karas.refresh;
   _karas$refresh.level.CACHE;
   _karas$refresh.webgl.drawTextureCache;
@@ -179,35 +182,28 @@ var $ = /*#__PURE__*/function (_karas$Geom) {
             gl: gl,
             manualRender: true
           });
-          this.gpu = mp.renderer.gpu;
-          this.renderState = mp.renderer.internal.state;
-          this.defaultMtl = new RI.Material({
+          this.gpu = mp.gpuCapability;
+          this.renderState = mp.renderer.pipelineContext.gl;
+          this.defaultMtl = Material.create({
             name: 'defMtl',
             shader: {
               vertex: vertexSimple,
-              fragment: fragmentSimple,
-              shared: true
-            },
-            states: {
-              blending: true,
-              blendSrc: gl.ONE,
-              blendSrcAlpha: gl.ONE,
-              blendDst: gl.ONE_MINUS_SRC_ALPHA,
-              blendDstAlpha: gl.ONE_MINUS_SRC_ALPHA,
-              depthMask: true,
-              depthTest: false,
-              cullFaceEnabled: false,
-              frontFace: gl.CCW,
-              stencilTest: false,
-              polygonOffsetFill: false,
-              polygonOffset: [1, 0]
+              fragment: fragmentSimple
             }
-          }).assignRenderer(mp.renderer);
+          });
+          this.defaultMtl.blending = true;
+          this.defaultMtl.blendFunction = [gl.ONE, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA];
+          this.defaultMtl.depthMask = true;
+          this.defaultMtl.depthTest = true;
+          this.defaultMtl.culling = false;
+          this.defaultMtl.cullFace = gl.CCW;
+          this.defaultMtl.stencilTest = false;
+          this.defaultMtl.polygonOffsetFill = false;
+          this.defaultMtl.polygonOffset = [1, 0];
           this.renderState.bindFramebuffer(gl.FRAMEBUFFER, null);
           this.renderState.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 0);
-          this.renderState.noCache = true;
           if (!this.host.blend) {
-            this.renderState.disable(RI.constants.BLEND);
+            this.renderState.disable(glContext.BLEND);
           }
           var flipY = gl.getParameter(gl.UNPACK_FLIP_Y_WEBGL);
           var premultiply = gl.getParameter(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL);
@@ -215,20 +211,23 @@ var $ = /*#__PURE__*/function (_karas$Geom) {
           gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
           var activeTexIndex = gl.getParameter(gl.ACTIVE_TEXTURE);
           var originTexture = gl.getParameter(gl.TEXTURE_BINDING_2D);
-          var composition = this.composition = mp.initializeComposition(scene, _objectSpread2({
-            onEnd: function onEnd() {},
+          var _renderer = mp.renderer;
+          var composition = this.composition = Composition.initialize(scene, _objectSpread2(_objectSpread2({
+            handleEnd: function handleEnd() {},
             keepResource: false,
             willReverseTime: false
-          }, this.playOptions));
+          }, this.playOptions), {}, {
+            renderer: _renderer,
+            width: _renderer.getWidth(),
+            height: _renderer.getHeight(),
+            shaderLibrary: _renderer.getShaderLibrary()
+          }));
           var onComp = function onComp() {
             composition.start();
             if (originTexture) {
               gl.bindTexture(gl.TEXTURE_2D, originTexture);
             }
             gl.activeTexture(activeTexIndex);
-            composition.camera = {
-              aspect: _this2.width / _this2.height
-            };
             _this2.renderState.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, +premultiply);
             _this2.renderState.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, +flipY);
             _this2.renderState.useProgram(null);
@@ -242,12 +241,12 @@ var $ = /*#__PURE__*/function (_karas$Geom) {
         if (renderer && !renderer.isDestroyed && !mp.paused) {
           this._updateTransform();
           this._updateComposition();
-          var bit = RI.constants.STENCIL_BUFFER_BIT;
+          var bit = glContext.STENCIL_BUFFER_BIT;
           if (this.host.clearDepth) {
-            bit = bit | RI.constants.DEPTH_BUFFER_BIT;
+            bit = bit | glContext.DEPTH_BUFFER_BIT;
           }
           this.renderState.clear(bit);
-          comp.renderFrame.render();
+          renderer.renderRenderFrame(comp.renderFrame);
         }
         this._reset(ctx);
       }
@@ -272,12 +271,12 @@ var $ = /*#__PURE__*/function (_karas$Geom) {
     key: "_updateComposition",
     value: function _updateComposition() {
       var comp = this.composition;
-      if (comp.shouldRestart) {
+      if (comp.shouldRestart()) {
         comp.restart();
-        comp.tick(0);
+        comp.update(0);
       } else if (!comp.shouldDestroy) {
         var dt = Math.min(this.timeDelta || 0, 33) * this.playbackRate;
-        comp.tick(dt);
+        comp.update(dt);
       }
     }
   }, {
@@ -293,14 +292,14 @@ var $ = /*#__PURE__*/function (_karas$Geom) {
   }, {
     key: "aliasRenderState",
     value: function aliasRenderState() {
-      var mtl = this.defaultMtl.materialInternal;
-      if (mtl && mtl.renderer.state) {
-        var marsRenderState = this.renderState;
-        marsRenderState._reset();
-        mtl.setupStates();
-        delete marsRenderState._dict[RI.constants.BLEND];
+      var mtl = this.defaultMtl;
+      var marsRenderState = this.mp.renderer.pipelineContext;
+      if (mtl && marsRenderState) {
+        marsRenderState.reset();
+        mtl.setupStates(marsRenderState);
+        delete marsRenderState.glCapabilityCache[glContext.BLEND];
         marsRenderState.depthMask(false);
-        marsRenderState.activeTexture(RI.constants.TEXTURE0);
+        marsRenderState.activeTexture(glContext.TEXTURE0);
       }
     }
   }, {
@@ -390,7 +389,8 @@ var Mars = /*#__PURE__*/function (_karas$Component) {
           var _this5$props;
           _this5.isLoaded = true;
           var json = request.response;
-          loadSceneAsync(json, _objectSpread2({}, (_this5$props = _this5.props) === null || _this5$props === void 0 ? void 0 : _this5$props.loadOptions)).then(function (scene) {
+          var asset = new AssetManager(_objectSpread2({}, (_this5$props = _this5.props) === null || _this5$props === void 0 ? void 0 : _this5$props.loadOptions));
+          asset.loadScene(json).then(function (scene) {
             var _this5$props$onLoad, _this5$props2;
             (_this5$props$onLoad = (_this5$props2 = _this5.props).onLoad) === null || _this5$props$onLoad === void 0 ? void 0 : _this5$props$onLoad.call(_this5$props2);
             _this5.playAnimation(scene);
@@ -432,7 +432,7 @@ var Mars = /*#__PURE__*/function (_karas$Component) {
           _this6.ref.fake.removeFrameAnimate(cb);
           _this6.pause();
           comp.restart();
-          comp.tick(start !== null && start !== void 0 ? start : 0);
+          comp.update(start !== null && start !== void 0 ? start : 0);
           _this6.resume();
         }
       };

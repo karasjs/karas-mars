@@ -133,7 +133,7 @@
     return typeof key === "symbol" ? key : String(key);
   }
 
-  var version = "0.0.12";
+  var version = "0.1.0";
 
   var _window$mars = window.mars,
     MarsPlayer = _window$mars.MarsPlayer,
