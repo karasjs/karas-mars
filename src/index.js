@@ -1,7 +1,7 @@
 import karas from 'karas';
-// import {  MarsPlayer,AssetManager,Material,glContext,Composition } from '@galacean/mars-player';
+import {  MarsPlayer,AssetManager,Material,glContext,Composition } from '@galacean/mars-player';
+// const {  MarsPlayer,AssetManager,Material,glContext,Composition } = window.mars;
 import { version } from '../package.json';
-const {  MarsPlayer,AssetManager,Material,glContext,Composition } = window.mars;
 
 const {
   refresh: {
@@ -69,8 +69,9 @@ class $ extends karas.Geom {
       let mp = this.mp;
       if(!mp) {
         gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+        const renderFramework = gl instanceof WebGLRenderingContext? 'webgl': 'webgl2';
         mp = this.mp = new MarsPlayer({
-          gl,
+          gl, renderFramework,
           manualRender: true,
         });
         this.gpu = mp.gpuCapability;

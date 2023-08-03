@@ -1,4 +1,5 @@
 import karas from 'karas';
+import { MarsPlayer, Material, glContext, Composition, AssetManager } from '@galacean/mars-player';
 
 function ownKeys(object, enumerableOnly) {
   var keys = Object.keys(object);
@@ -125,14 +126,8 @@ function _toPropertyKey(arg) {
   return typeof key === "symbol" ? key : String(key);
 }
 
-var version = "0.1.0";
+var version = "0.1.1";
 
-var _window$mars = window.mars,
-  MarsPlayer = _window$mars.MarsPlayer,
-  AssetManager = _window$mars.AssetManager,
-  Material = _window$mars.Material,
-  glContext = _window$mars.glContext,
-  Composition = _window$mars.Composition;
 var _karas$refresh = karas.refresh;
   _karas$refresh.level.CACHE;
   _karas$refresh.webgl.drawTextureCache;
@@ -178,8 +173,10 @@ var $ = /*#__PURE__*/function (_karas$Geom) {
         var mp = this.mp;
         if (!mp) {
           gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+          var renderFramework = gl instanceof WebGLRenderingContext ? 'webgl' : 'webgl2';
           mp = this.mp = new MarsPlayer({
             gl: gl,
+            renderFramework: renderFramework,
             manualRender: true
           });
           this.gpu = mp.gpuCapability;

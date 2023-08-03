@@ -1,8 +1,8 @@
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('karas')) :
-  typeof define === 'function' && define.amd ? define(['karas'], factory) :
-  (global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.Mars = factory(global.karas));
-})(this, (function (karas) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('karas'), require('@galacean/mars-player')) :
+  typeof define === 'function' && define.amd ? define(['karas', '@galacean/mars-player'], factory) :
+  (global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.Mars = factory(global.karas, global.marsPlayer));
+})(this, (function (karas, marsPlayer) { 'use strict';
 
   function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'default' in e ? e : { 'default': e }; }
 
@@ -133,14 +133,8 @@
     return typeof key === "symbol" ? key : String(key);
   }
 
-  var version = "0.1.0";
+  var version = "0.1.1";
 
-  var _window$mars = window.mars,
-    MarsPlayer = _window$mars.MarsPlayer,
-    AssetManager = _window$mars.AssetManager,
-    Material = _window$mars.Material,
-    glContext = _window$mars.glContext,
-    Composition = _window$mars.Composition;
   var _karas$refresh = karas__default["default"].refresh;
     _karas$refresh.level.CACHE;
     _karas$refresh.webgl.drawTextureCache;
@@ -186,13 +180,15 @@
           var mp = this.mp;
           if (!mp) {
             gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
-            mp = this.mp = new MarsPlayer({
+            var renderFramework = gl instanceof WebGLRenderingContext ? 'webgl' : 'webgl2';
+            mp = this.mp = new marsPlayer.MarsPlayer({
               gl: gl,
+              renderFramework: renderFramework,
               manualRender: true
             });
             this.gpu = mp.gpuCapability;
             this.renderState = mp.renderer.pipelineContext.gl;
-            this.defaultMtl = Material.create({
+            this.defaultMtl = marsPlayer.Material.create({
               name: 'defMtl',
               shader: {
                 vertex: vertexSimple,
@@ -211,7 +207,7 @@
             this.renderState.bindFramebuffer(gl.FRAMEBUFFER, null);
             this.renderState.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 0);
             if (!this.host.blend) {
-              this.renderState.disable(glContext.BLEND);
+              this.renderState.disable(marsPlayer.glContext.BLEND);
             }
             var flipY = gl.getParameter(gl.UNPACK_FLIP_Y_WEBGL);
             var premultiply = gl.getParameter(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL);
@@ -220,7 +216,7 @@
             var activeTexIndex = gl.getParameter(gl.ACTIVE_TEXTURE);
             var originTexture = gl.getParameter(gl.TEXTURE_BINDING_2D);
             var _renderer = mp.renderer;
-            var composition = this.composition = Composition.initialize(scene, _objectSpread2(_objectSpread2({
+            var composition = this.composition = marsPlayer.Composition.initialize(scene, _objectSpread2(_objectSpread2({
               handleEnd: function handleEnd() {},
               keepResource: false,
               willReverseTime: false
@@ -249,9 +245,9 @@
           if (renderer && !renderer.isDestroyed && !mp.paused) {
             this._updateTransform();
             this._updateComposition();
-            var bit = glContext.STENCIL_BUFFER_BIT;
+            var bit = marsPlayer.glContext.STENCIL_BUFFER_BIT;
             if (this.host.clearDepth) {
-              bit = bit | glContext.DEPTH_BUFFER_BIT;
+              bit = bit | marsPlayer.glContext.DEPTH_BUFFER_BIT;
             }
             this.renderState.clear(bit);
             renderer.renderRenderFrame(comp.renderFrame);
@@ -305,9 +301,9 @@
         if (mtl && marsRenderState) {
           marsRenderState.reset();
           mtl.setupStates(marsRenderState);
-          delete marsRenderState.glCapabilityCache[glContext.BLEND];
+          delete marsRenderState.glCapabilityCache[marsPlayer.glContext.BLEND];
           marsRenderState.depthMask(false);
-          marsRenderState.activeTexture(glContext.TEXTURE0);
+          marsRenderState.activeTexture(marsPlayer.glContext.TEXTURE0);
         }
       }
     }, {
@@ -397,7 +393,7 @@
             var _this5$props;
             _this5.isLoaded = true;
             var json = request.response;
-            var asset = new AssetManager(_objectSpread2({}, (_this5$props = _this5.props) === null || _this5$props === void 0 ? void 0 : _this5$props.loadOptions));
+            var asset = new marsPlayer.AssetManager(_objectSpread2({}, (_this5$props = _this5.props) === null || _this5$props === void 0 ? void 0 : _this5$props.loadOptions));
             asset.loadScene(json).then(function (scene) {
               var _this5$props$onLoad, _this5$props2;
               (_this5$props$onLoad = (_this5$props2 = _this5.props).onLoad) === null || _this5$props$onLoad === void 0 ? void 0 : _this5$props$onLoad.call(_this5$props2);
