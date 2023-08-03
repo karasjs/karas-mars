@@ -350,7 +350,6 @@
       _defineProperty(_assertThisInitialized(_this3), "__playbackRate", 1);
       _defineProperty(_assertThisInitialized(_this3), "clearDepth", false);
       _defineProperty(_assertThisInitialized(_this3), "blend", false);
-      console.log(_assertThisInitialized(_this3));
       _this3.isPlay = props.autoPlay !== false;
       _this3.__playbackRate = (_props$playbackRate = props.playbackRate) !== null && _props$playbackRate !== void 0 ? _props$playbackRate : 1;
       _this3.clearDepth = !!props.clearDepth;

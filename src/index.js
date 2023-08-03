@@ -227,7 +227,6 @@ class Mars extends karas.Component {
 
   constructor(props) {
     super(props);
-    console.log(this);
 
     this.isPlay = props.autoPlay !== false;
     this.__playbackRate = props.playbackRate ?? 1;
