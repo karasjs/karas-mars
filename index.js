@@ -397,7 +397,6 @@
             var _this5$props;
             _this5.isLoaded = true;
             var json = request.response;
-            // console.log('@alipay/mars-player');
             var asset = new AssetManager(_objectSpread2({}, (_this5$props = _this5.props) === null || _this5$props === void 0 ? void 0 : _this5$props.loadOptions));
             asset.loadScene(json).then(function (scene) {
               var _this5$props$onLoad, _this5$props2;

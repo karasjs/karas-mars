@@ -268,7 +268,6 @@ class Mars extends karas.Component {
       if(request.response) {
         this.isLoaded = true;
         let json = request.response;
-        // console.log('@alipay/mars-player');
         const asset = new AssetManager( {...this.props?.loadOptions});
         asset.loadScene(json).then(scene => {
           this.props.onLoad?.();
