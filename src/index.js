@@ -92,10 +92,6 @@ class $ extends karas.Geom {
         this.defaultMtl.polygonOffsetFill = false;
         this.defaultMtl.polygonOffset = [1, 0];
 
-
-
-        this.defaultMtl.initialize(mp.renderer.engine);
-
         this.renderState.bindFramebuffer(gl.FRAMEBUFFER, null);
         this.renderState.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 0);
 
