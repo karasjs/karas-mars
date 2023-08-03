@@ -1,6 +1,5 @@
 import karas from 'karas';
-// import * as MarsPlayer from '@alipay/mars-player'
-// import { loadScene, MarsPlayer } from '@galacean/mars-player';
+// import {  MarsPlayer,AssetManager,Material,glContext,Composition } from '@galacean/mars-player';
 import { version } from '../package.json';
 const {  MarsPlayer,AssetManager,Material,glContext,Composition } = window.mars;
 
@@ -65,7 +64,6 @@ class $ extends karas.Geom {
       return res;
     }
     let scene = this.scene;
-    console.log(scene);
     let gl = ctx;
     if(scene) {
       let mp = this.mp;
@@ -82,23 +80,20 @@ class $ extends karas.Geom {
           shader: {
             vertex: vertexSimple,
             fragment: fragmentSimple,
-            shared: true,
           }
-          // states: {
-          //   blending: true,
-          //   blendSrc: gl.ONE,
-          //   blendSrcAlpha: gl.ONE,
-          //   blendDst: gl.ONE_MINUS_SRC_ALPHA,
-          //   blendDstAlpha: gl.ONE_MINUS_SRC_ALPHA,
-          //   depthMask: true,
-          //   depthTest: false,
-          //   cullFaceEnabled: false,
-          //   frontFace: gl.CCW,
-          //   stencilTest: false,
-          //   polygonOffsetFill: false,
-          //   polygonOffset: [1, 0],
-          // },
         });
+        this.defaultMtl.blending = true;
+        this.defaultMtl.blendFunction = [gl.ONE,gl.ONE_MINUS_SRC_ALPHA,gl.ONE,gl.ONE_MINUS_SRC_ALPHA];
+        this.defaultMtl.depthMask = true;
+        this.defaultMtl.depthTest = true;
+        this.defaultMtl.culling = false;
+        this.defaultMtl.cullFace = gl.CCW;
+        this.defaultMtl.stencilTest = false;
+        this.defaultMtl.polygonOffsetFill = false;
+        this.defaultMtl.polygonOffset = [1, 0];
+
+
+
         this.defaultMtl.initialize(mp.renderer.engine);
 
         this.renderState.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -191,12 +186,13 @@ class $ extends karas.Geom {
   }
 
   aliasRenderState() {
-    let mtl = this.defaultMtl.materialInternal;
-    if(mtl && mtl.renderer.state) {
-      let marsRenderState = this.renderState;
-      marsRenderState._reset();
-      mtl.setupStates();
-      delete marsRenderState._dict[glContext.BLEND];
+    let mtl = this.defaultMtl;
+    let marsRenderState = this.mp.renderer.pipelineContext;
+
+    if(mtl && marsRenderState) {
+      marsRenderState.reset();
+      mtl.setupStates(marsRenderState);
+      delete marsRenderState.glCapabilityCache[glContext.BLEND];
       marsRenderState.depthMask(false);
       marsRenderState.activeTexture(glContext.TEXTURE0);
     }
